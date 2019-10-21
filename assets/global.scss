@@ -1,0 +1,64 @@
+* {
+  box-sizing: border-box;
+}
+
+@media screen and (max-width: 1280px) {
+  html {
+    font-size: 11px !important;
+  }
+}
+
+@media screen and (min-width: 1281px) and (max-width: 1440px) {
+  html {
+    font-size: 12px !important;
+  }
+}
+
+@media screen and (min-width: 1441px) and (max-width: 1920px) {
+  html {
+    font-size: 13px !important;
+  }
+}
+
+body {
+  font-size: 1.6rem;
+  font-family: "PT Sans", sans-serif !important;
+}
+
+img {
+  display: block;
+  image-orientation: from-image;
+}
+
+.page-enter-active,
+.page-leave-active,
+.layout-enter-active,
+.layout-leave-active {
+  transition: opacity 0.2s;
+}
+
+.page-enter,
+.page-leave-to,
+.layout-enter,
+.layout-leave-to {
+  opacity: 0;
+}
+
+.page-enter-to,
+.page-leave,
+.layout-enter-to,
+.layout-leave {
+  opacity: 1;
+}
+
+.w100 {
+  width: 100px;
+}
+
+.mr-2 {
+  margin-right: 1rem;
+}
+
+.mr-4 {
+  margin-right: 2rem;
+}
