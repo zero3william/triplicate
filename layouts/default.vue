@@ -21,14 +21,15 @@ export default {
 
 <style lang="scss" scoped>
 .fullscreen {
+  min-width: 690px;
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(
-    rgb(255, 244, 200) 0%,
-    rgb(255, 244, 200) 50%,
-    rgb(255, 237, 163) 50%,
-    rgb(255, 237, 163) 100%
-  );
+  // background: linear-gradient(
+  //   rgb(255, 244, 200) 0%,
+  //   rgb(255, 244, 200) 50%,
+  //   rgb(255, 237, 163) 50%,
+  //   rgb(255, 237, 163) 100%
+  // );
 }
 .main-container {
   width: 100%;

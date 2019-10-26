@@ -1,9 +1,17 @@
 <template>
-  <div class="title">Triplicate</div>
+  <div>
+    <Triplicate />
+  </div>
 </template>
 
 <script>
-export default {}
+import Triplicate from '../components/Triplicate'
+
+export default {
+  components: {
+    Triplicate
+  }
+}
 </script>
 
 <style>

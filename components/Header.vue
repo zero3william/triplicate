@@ -54,6 +54,10 @@ export default {
       loginForm: {
         account: '',
         password: ''
+      },
+      rules: {
+        account: [{ required: true, message: '請輸入帳號', trigger: 'blur' }],
+        password: [{ required: true, message: '請輸入密碼', trigger: 'blur' }]
       }
     }
   },
