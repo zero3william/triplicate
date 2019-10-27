@@ -69,13 +69,13 @@
             <input v-model="item1.name" />
           </td>
           <td>
-            <input v-model="item1.num" />
+            <input v-model="item1.num" @keyup="changeItem(1,'num')" />
           </td>
           <td>
-            <input v-model="item1.price" />
+            <input v-model="item1.price" @keyup="changeItem(1,'price')" />
           </td>
           <td>
-            <input v-model="item1.total" />
+            <input v-model="item1.total" @keyup="changeItem(1,'total')" />
           </td>
           <td rowspan="2"></td>
         </tr>
@@ -84,13 +84,13 @@
             <input v-model="item2.name" />
           </td>
           <td>
-            <input v-model="item2.num" />
+            <input v-model="item2.num" @keyup="changeItem(2,'num')" />
           </td>
           <td>
-            <input v-model="item2.price" />
+            <input v-model="item2.price" @keyup="changeItem(2,'price')" />
           </td>
           <td>
-            <input v-model="item2.total" />
+            <input v-model="item2.total" @keyup="changeItem(2,'total')" />
           </td>
         </tr>
         <tr class="thin-border">
@@ -98,13 +98,13 @@
             <input v-model="item3.name" />
           </td>
           <td>
-            <input v-model="item3.num" />
+            <input v-model="item3.num" @keyup="changeItem(3,'num')" />
           </td>
           <td>
-            <input v-model="item3.price" />
+            <input v-model="item3.price" @keyup="changeItem(3,'price')" />
           </td>
           <td>
-            <input v-model="item3.total" />
+            <input v-model="item3.total" @keyup="changeItem(3,'total')" />
           </td>
           <td>營業人蓋用統一發票專用章</td>
         </tr>
@@ -113,13 +113,13 @@
             <input v-model="item4.name" />
           </td>
           <td>
-            <input v-model="item4.num" />
+            <input v-model="item4.num" @keyup="changeItem(4,'num')" />
           </td>
           <td>
-            <input v-model="item4.price" />
+            <input v-model="item4.price" @keyup="changeItem(4,'price')" />
           </td>
           <td>
-            <input v-model="item4.total" />
+            <input v-model="item4.total" @keyup="changeItem(4,'total')" />
           </td>
           <td rowspan="6">
             <span id="stamp">(發票章)</span>
@@ -130,13 +130,13 @@
             <input v-model="item5.name" />
           </td>
           <td>
-            <input v-model="item5.num" />
+            <input v-model="item5.num" @keyup="changeItem(5,'num')" />
           </td>
           <td>
-            <input v-model="item5.price" />
+            <input v-model="item5.price" @keyup="changeItem(5,'price')" />
           </td>
           <td>
-            <input v-model="item5.total" />
+            <input v-model="item5.total" @keyup="changeItem(5,'total')" />
           </td>
         </tr>
         <tr>
@@ -246,6 +246,41 @@ export default {
     text: String
   },
   methods: {
+    changeItem(num, key) {
+      this[`item${num}`][key] = this[`item${num}`][key]
+        ? parseInt(this[`item${num}`][key])
+        : ''
+
+      switch (key) {
+        case 'num':
+          if (this[`item${num}`]['price'] > 0) {
+            this[`item${num}`]['total'] =
+              this[`item${num}`]['num'] * this[`item${num}`]['price']
+          }
+          break
+        case 'price':
+          if (this[`item${num}`]['num'] > 0) {
+            this[`item${num}`]['total'] =
+              this[`item${num}`]['num'] * this[`item${num}`]['price']
+          }
+          break
+        case 'total':
+          if (this[`item${num}`]['num'] > 0) {
+            this[`item${num}`]['price'] =
+              this[`item${num}`]['total'] / this[`item${num}`]['num']
+          } else {
+            this[`item${num}`]['num'] = 1
+            this[`item${num}`]['price'] = this[`item${num}`]['total']
+          }
+          break
+      }
+      this.writePrice =
+        this.item1.total +
+        this.item2.total +
+        this.item3.total +
+        this.item4.total +
+        this.item5.total
+    },
     toChineseNum(num) {
       switch (parseInt(num)) {
         case 1:
@@ -275,9 +310,13 @@ export default {
         this.taxType1 = false
         this.taxType2 = false
         this.taxType3 = false
-        this[target] = true
       }
-      this.totalChange()
+      this[target] = true
+
+      if (this.taxType1) {
+        this.writeTax = this.writePrice * this.$store.state.taxRate
+        this.writeTotal = this.writePrice + this.writeTax
+      }
     },
     totalChange(e) {
       this.clearItems()
@@ -290,22 +329,24 @@ export default {
         this.writeTotal = 999999999
       }
       if (this.taxType1) {
-        this.writePrice = Math.round((this.writeTotal / 105) * 100)
+        this.writePrice = Math.round(
+          this.writeTotal / (1 + this.$store.state.taxRate)
+        )
       } else {
         this.writePrice = this.writeTotal
       }
       this.setFirstItem()
     },
     clearItems() {
-      this.item1 = {}
-      this.item2 = {}
-      this.item3 = {}
-      this.item4 = {}
-      this.item5 = {}
+      this.item1 = { name: this.item1.name, num: '', price: '', total: '' }
+      this.item2 = { name: '', num: '', price: '', total: '' }
+      this.item3 = { name: '', num: '', price: '', total: '' }
+      this.item4 = { name: '', num: '', price: '', total: '' }
+      this.item5 = { name: '', num: '', price: '', total: '' }
     },
     setFirstItem() {
       this.item1 = {
-        name: '',
+        name: this.item1.name,
         num: 1,
         price: this.writePrice,
         total: this.writePrice
@@ -315,7 +356,7 @@ export default {
   computed: {
     writeTax() {
       if (this.taxType1) {
-        return Math.round(this.writePrice * 0.05)
+        return Math.round(this.writePrice * this.$store.state.taxRate)
       } else {
         return 0
       }
@@ -356,11 +397,11 @@ export default {
       taxType3: false,
       writePrice: '',
       writeTotal: '',
-      item1: {},
-      item2: {},
-      item3: {},
-      item4: {},
-      item5: {},
+      item1: { name: '', num: '', price: '', total: '' },
+      item2: { name: '', num: '', price: '', total: '' },
+      item3: { name: '', num: '', price: '', total: '' },
+      item4: { name: '', num: '', price: '', total: '' },
+      item5: { name: '', num: '', price: '', total: '' },
       totalBig: []
     }
   }
