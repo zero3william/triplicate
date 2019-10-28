@@ -314,8 +314,9 @@ export default {
       this[target] = true
 
       if (this.taxType1) {
-        this.writeTax = this.writePrice * this.$store.state.taxRate
         this.writeTotal = this.writePrice + this.writeTax
+      } else {
+        this.writeTotal = this.writePrice
       }
     },
     totalChange(e) {
@@ -382,6 +383,8 @@ export default {
           .toString()
           .split('')
           .reverse()
+        // this.totalBig = this.totalBig.map(item => '----')
+        console.log(this.totalBig)
         for (let i = 0; i < strArr.length; i++) {
           this.totalBig[i] = this.toChineseNum(strArr[i])
         }
@@ -402,7 +405,7 @@ export default {
       item3: { name: '', num: '', price: '', total: '' },
       item4: { name: '', num: '', price: '', total: '' },
       item5: { name: '', num: '', price: '', total: '' },
-      totalBig: []
+      totalBig: new Array(9).fill('-', 0)
     }
   }
 }
@@ -416,6 +419,7 @@ export default {
   position: relative;
   padding: 1rem;
   max-width: 720px;
+  min-width: 680px;
   margin: 0 auto;
   &:after {
     content: '';
