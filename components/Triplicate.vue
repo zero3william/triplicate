@@ -31,7 +31,12 @@
         <td>
           <el-button icon="el-icon-search" type="info" plain size="mini"></el-button>
         </td>
-        <td>中華民國 xxx 年 x 月 xx 日</td>
+        <td>
+          中華民國
+          <input type="text" style="width:40px;" v-model="date.year" /> 年
+          <input type="text" style="width:40px;" v-model="date.month" /> 月
+          <input type="text" style="width:40px;" v-model="date.day" /> 日
+        </td>
       </tr>
       <tr>
         <td>
@@ -69,13 +74,13 @@
             <input v-model="item1.name" />
           </td>
           <td>
-            <input v-model="item1.num" @keyup="changeItem(1,'num')" />
+            <input v-model="item1.num" @keyup="changeItem($event,1,'num')" />
           </td>
           <td>
-            <input v-model="item1.price" @keyup="changeItem(1,'price')" />
+            <input v-model="item1.price" @keyup="changeItem($event,1,'price')" />
           </td>
           <td>
-            <input v-model="item1.total" @keyup="changeItem(1,'total')" />
+            <input v-model="item1.total" @keyup="changeItem($event,1,'total')" />
           </td>
           <td rowspan="2"></td>
         </tr>
@@ -84,13 +89,13 @@
             <input v-model="item2.name" />
           </td>
           <td>
-            <input v-model="item2.num" @keyup="changeItem(2,'num')" />
+            <input v-model="item2.num" @keyup="changeItem($event,2,'num')" />
           </td>
           <td>
-            <input v-model="item2.price" @keyup="changeItem(2,'price')" />
+            <input v-model="item2.price" @keyup="changeItem($event,2,'price')" />
           </td>
           <td>
-            <input v-model="item2.total" @keyup="changeItem(2,'total')" />
+            <input v-model="item2.total" @keyup="changeItem($event,2,'total')" />
           </td>
         </tr>
         <tr class="thin-border">
@@ -98,13 +103,13 @@
             <input v-model="item3.name" />
           </td>
           <td>
-            <input v-model="item3.num" @keyup="changeItem(3,'num')" />
+            <input v-model="item3.num" @keyup="changeItem($event,3,'num')" />
           </td>
           <td>
-            <input v-model="item3.price" @keyup="changeItem(3,'price')" />
+            <input v-model="item3.price" @keyup="changeItem($event,3,'price')" />
           </td>
           <td>
-            <input v-model="item3.total" @keyup="changeItem(3,'total')" />
+            <input v-model="item3.total" @keyup="changeItem($event,3,'total')" />
           </td>
           <td>營業人蓋用統一發票專用章</td>
         </tr>
@@ -113,13 +118,13 @@
             <input v-model="item4.name" />
           </td>
           <td>
-            <input v-model="item4.num" @keyup="changeItem(4,'num')" />
+            <input v-model="item4.num" @keyup="changeItem($event,4,'num')" />
           </td>
           <td>
-            <input v-model="item4.price" @keyup="changeItem(4,'price')" />
+            <input v-model="item4.price" @keyup="changeItem($event,4,'price')" />
           </td>
           <td>
-            <input v-model="item4.total" @keyup="changeItem(4,'total')" />
+            <input v-model="item4.total" @keyup="changeItem($event,4,'total')" />
           </td>
           <td rowspan="6">
             <span id="stamp">(發票章)</span>
@@ -130,13 +135,13 @@
             <input v-model="item5.name" />
           </td>
           <td>
-            <input v-model="item5.num" @keyup="changeItem(5,'num')" />
+            <input v-model="item5.num" @keyup="changeItem($event,5,'num')" />
           </td>
           <td>
-            <input v-model="item5.price" @keyup="changeItem(5,'price')" />
+            <input v-model="item5.price" @keyup="changeItem($event,5,'price')" />
           </td>
           <td>
-            <input v-model="item5.total" @keyup="changeItem(5,'total')" />
+            <input v-model="item5.total" @keyup="changeItem($event,5,'total')" />
           </td>
         </tr>
         <tr>
@@ -246,11 +251,13 @@ export default {
     text: String
   },
   methods: {
-    changeItem(num, key) {
+    changeItem(event, num, key) {
+      if (event.key === 'Tab') {
+        return
+      }
       this[`item${num}`][key] = this[`item${num}`][key]
         ? parseInt(this[`item${num}`][key])
         : ''
-
       switch (key) {
         case 'num':
           if (this[`item${num}`]['price'] > 0) {
@@ -383,8 +390,7 @@ export default {
           .toString()
           .split('')
           .reverse()
-        // this.totalBig = this.totalBig.map(item => '----')
-        console.log(this.totalBig)
+        this.totalBig = this.totalBig.map(item => '-')
         for (let i = 0; i < strArr.length; i++) {
           this.totalBig[i] = this.toChineseNum(strArr[i])
         }
@@ -405,8 +411,15 @@ export default {
       item3: { name: '', num: '', price: '', total: '' },
       item4: { name: '', num: '', price: '', total: '' },
       item5: { name: '', num: '', price: '', total: '' },
-      totalBig: new Array(9).fill('-', 0)
+      totalBig: new Array(9).fill('-', 0),
+      date: { year: '', month: '', day: '' }
     }
+  },
+  mounted() {
+    let d = new Date()
+    this.date.year = d.getFullYear() - 1911
+    this.date.month = d.getMonth() + 1
+    this.date.day = d.getDate()
   }
 }
 </script>
