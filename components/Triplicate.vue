@@ -1,10 +1,21 @@
 <template>
-  <div class="invoice-contaner">
+  <div
+    class="invoice-contaner"
+    v-loading.fullscreen="loading"
+    element-loading-text="查詢中"
+    element-loading-spinner="el-icon-loading"
+    element-loading-background="rgba(0, 0, 0, 0.8)"
+  >
     <div class="title text-center">
       <span>統一發票</span>
       <span>(三聯式)</span>
     </div>
-    <div class="subtitle text-center">一〇八年九、十月份</div>
+    <div class="subtitle text-center">
+      <span>{{titleYear}}</span>
+      年
+      <span>{{titleMonth}}</span>
+      月份
+    </div>
     <table class="basic-info">
       <tr>
         <td>
@@ -15,7 +26,7 @@
           </div>
         </td>
         <td>
-          <input type="text" v-model="name" />
+          <input type="text" v-model="name" @keyup="searchCode" style="width:210px;" />
         </td>
         <td></td>
       </tr>
@@ -29,6 +40,7 @@
           </div>
         </td>
         <td>
+          <span>{{taxCode}}</span>
           <el-button icon="el-icon-search" type="info" plain size="mini"></el-button>
         </td>
         <td>
@@ -251,6 +263,16 @@ export default {
     text: String
   },
   methods: {
+    searchCode(e) {
+      if (e.key === 'Enter') {
+        e.target.blur()
+        this.loading = true
+        this.$api.getCompanyCodeList({ companyName: this.name }).then(resp => {
+          console.log(3333, resp)
+          this.loading = false
+        })
+      }
+    },
     changeItem(event, num, key) {
       if (event.key === 'Tab') {
         return
@@ -312,6 +334,52 @@ export default {
           return '零'
       }
     },
+    toChineseNum2(num) {
+      switch (parseInt(num)) {
+        case 1:
+          return '一'
+        case 2:
+          return '二'
+        case 3:
+          return '三'
+        case 4:
+          return '四'
+        case 5:
+          return '五'
+        case 6:
+          return '六'
+        case 7:
+          return '七'
+        case 8:
+          return '八'
+        case 9:
+          return '九'
+        case 0:
+          return '〇'
+      }
+    },
+    toChineseNum3(num) {
+      switch (parseInt(num)) {
+        case 1:
+        case 2:
+          return '一、二'
+        case 3:
+        case 4:
+          return '三、四'
+        case 5:
+        case 6:
+          return '五、六'
+        case 7:
+        case 8:
+          return '七、八'
+        case 9:
+        case 10:
+          return '九、十'
+        case 11:
+        case 12:
+          return '十一、十二'
+      }
+    },
     taxChange(checked, target) {
       if (checked) {
         this.taxType1 = false
@@ -368,6 +436,16 @@ export default {
       } else {
         return 0
       }
+    },
+    titleYear() {
+      const strArr = this.date.year.toString().split('')
+      for (let i = 0; i < strArr.length; i++) {
+        strArr[i] = this.toChineseNum2(strArr[i])
+      }
+      return strArr.join('')
+    },
+    titleMonth() {
+      return this.toChineseNum3(this.date.month)
     }
   },
   watch: {
@@ -399,7 +477,7 @@ export default {
   },
   data() {
     return {
-      name: '123',
+      name: '台灣積體電路製造股份有限公司',
       taxCode: '',
       taxType1: true,
       taxType2: false,
@@ -412,7 +490,8 @@ export default {
       item4: { name: '', num: '', price: '', total: '' },
       item5: { name: '', num: '', price: '', total: '' },
       totalBig: new Array(9).fill('-', 0),
-      date: { year: '', month: '', day: '' }
+      date: { year: '', month: '', day: '' },
+      loading: false
     }
   },
   mounted() {
@@ -460,6 +539,7 @@ export default {
     }
   }
   .subtitle {
+    font-family: '微軟正黑體', '微软雅黑', 'メイリオ', '맑은 고딕', sans-serif;
     font-size: 1.2rem;
     letter-spacing: 3px;
     margin-bottom: 1rem;
