@@ -1,9 +1,16 @@
 <template>
-  <div class="title">Tax Code Search</div>
+  <TaxCodeSeacher />
 </template>
 
 <script>
-export default {}
+import TaxCodeSeacher from '../components/TaxCodeSeacher'
+
+export default {
+  name: 'codeSearch',
+  components: {
+    TaxCodeSeacher
+  }
+}
 </script>
 
 <style>

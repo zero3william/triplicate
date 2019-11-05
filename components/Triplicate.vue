@@ -6,6 +6,8 @@
     element-loading-spinner="el-icon-loading"
     element-loading-background="rgba(0, 0, 0, 0.8)"
   >
+    <el-button type="info" plain @click="reset" style="float:right;">清空重填</el-button>
+
     <div class="title text-center">
       <span>統一發票</span>
       <span>(三聯式)</span>
@@ -26,7 +28,7 @@
           </div>
         </td>
         <td>
-          <input type="text" v-model="name" @keyup="searchCode" style="width:210px;" />
+          <input type="text" v-model="buyer" @keyup="searchCode" style="width:210px;" />
         </td>
         <td></td>
       </tr>
@@ -40,8 +42,8 @@
           </div>
         </td>
         <td>
-          <span>{{taxCode}}</span>
-          <el-button icon="el-icon-search" type="info" plain size="mini"></el-button>
+          <span style="letter-spacing:6px;padding-left:3px;">{{taxCode}}</span>
+          <el-button icon="el-icon-search" type="info" plain size="mini" @click="toCodeSearch"></el-button>
         </td>
         <td>
           中華民國
@@ -57,7 +59,7 @@
             <span>址</span>
           </div>
         </td>
-        <td>台北市信義區忠孝東路4段331巷</td>
+        <td>{{address}}</td>
         <td></td>
       </tr>
     </table>
@@ -252,24 +254,64 @@
         </tr>
       </tbody>
     </table>
+
+    <el-dialog title="查詢結果" :visible.sync="dialogVisible" width="700px">
+      <el-table :data="list" :height="tableHeight" stripe>
+        <el-table-column type="index" align="center" width="80"></el-table-column>
+        <el-table-column
+          v-for="col in columns"
+          :prop="col.id"
+          :key="col.id"
+          :label="col.label"
+          :width="col.width"
+          align="center"
+        ></el-table-column>
+        <el-table-column fixed="right" width="160" align="center">
+          <template slot-scope="scope">
+            <el-button @click="selectBuyer(scope.row)" type="text" size="small">複製</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'LinkBtn',
-  props: {
-    to: String,
-    text: String
-  },
+  name: 'Triplicate',
   methods: {
+    selectBuyer(data) {
+      this.taxCode = data.Business_Accounting_NO
+      this.buyer = data.Company_Name
+      this.address = data.Company_Location
+      this.dialogVisible = false
+    },
+    toCodeSearch() {
+      this.$router.push({
+        name: 'codeSearch'
+      })
+    },
     searchCode(e) {
-      if (e.key === 'Enter') {
+      if (
+        e.key === 'Enter' &&
+        !(this.buyer === '' || this.buyer === undefined)
+      ) {
         e.target.blur()
         this.loading = true
-        this.$api.getCompanyCodeList({ companyName: this.name }).then(resp => {
-          console.log(3333, resp)
+        this.$api.getCompanyCodeList(this.buyer).then(resp => {
           this.loading = false
+          if (resp.data.length > 0) {
+            this.list = resp.data
+            this.dialogVisible = true
+          } else {
+            this.$message({
+              message: '查無資料',
+              type: 'warning'
+            })
+          }
         })
       }
     },
@@ -427,6 +469,20 @@ export default {
         price: this.writePrice,
         total: this.writePrice
       }
+    },
+    reset() {
+      this.buyer = ''
+      this.taxCode = ''
+      this.address = ''
+      this.taxType1 = true
+      this.taxType2 = false
+      this.taxType3 = false
+      this.writePrice = ''
+      this.item1 = { name: '', num: '', price: '', total: '' }
+      this.item2 = { name: '', num: '', price: '', total: '' }
+      this.item3 = { name: '', num: '', price: '', total: '' }
+      this.item4 = { name: '', num: '', price: '', total: '' }
+      this.item5 = { name: '', num: '', price: '', total: '' }
     }
   },
   computed: {
@@ -477,8 +533,9 @@ export default {
   },
   data() {
     return {
-      name: '台灣積體電路製造股份有限公司',
+      buyer: '',
       taxCode: '',
+      address: '',
       taxType1: true,
       taxType2: false,
       taxType3: false,
@@ -491,7 +548,14 @@ export default {
       item5: { name: '', num: '', price: '', total: '' },
       totalBig: new Array(9).fill('-', 0),
       date: { year: '', month: '', day: '' },
-      loading: false
+      loading: false,
+      dialogVisible: false,
+      list: [],
+      columns: [
+        { label: '統一編號', width: 160, id: 'Business_Accounting_NO' },
+        { label: '公司名稱', id: 'Company_Name' }
+      ],
+      tableHeight: 560
     }
   },
   mounted() {
@@ -499,6 +563,10 @@ export default {
     this.date.year = d.getFullYear() - 1911
     this.date.month = d.getMonth() + 1
     this.date.day = d.getDate()
+
+    this.buyer = this.$route.params.buyer
+    this.taxCode = this.$route.params.taxCode
+    this.address = this.$route.params.address
   }
 }
 </script>

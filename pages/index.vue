@@ -8,6 +8,7 @@
 import Triplicate from '../components/Triplicate'
 
 export default {
+  name: 'index',
   components: {
     Triplicate
   }

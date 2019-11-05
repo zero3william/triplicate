@@ -1,6 +1,6 @@
 <template>
   <el-row type="flex" justify="center" align="middle" class="fullscreen">
-    <el-card :body-style="{ padding: '20px' }" class="main-container">
+    <el-card :body-style="{ padding: '40px' }" id="main-container">
       <div slot="header">
         <AppHeader />
       </div>
@@ -31,9 +31,10 @@ export default {
   //   rgb(255, 237, 163) 100%
   // );
 }
-.main-container {
+#main-container {
   width: 100%;
-  max-width: 1366px;
+  min-width: 800px;
+  max-width: 900px;
   min-height: 768px;
   max-height: 768px;
 }
