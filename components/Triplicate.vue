@@ -255,6 +255,10 @@
       </tbody>
     </table>
 
+    <el-row type="flex" justify="center">
+      <el-button class="save-btn" v-if="$store.state.isLogin" type="success" round>儲存此張發票</el-button>
+    </el-row>
+
     <el-dialog title="查詢結果" :visible.sync="dialogVisible" width="700px">
       <el-table :data="list" :height="tableHeight" stripe>
         <el-table-column type="index" align="center" width="80"></el-table-column>
@@ -572,18 +576,26 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.save-btn {
+  margin-top: 4rem;
+  color: #fff !important;
+  border: none !important;
+  padding: 1rem 2rem !important;
+  font-size: 1.8rem;
+}
 .invoice-contaner {
   font-family: '標楷體', DFKai-sb, BiauKai;
   font-size: 1.2rem;
   font-weight: bold;
   position: relative;
-  padding: 1rem;
+  padding: 1rem 2rem;
   max-width: 720px;
   min-width: 680px;
   margin: 0 auto;
   &:after {
     content: '';
     background-image: url('/tw-bg.png');
+    height: 470px;
     opacity: 0.1;
     position: absolute;
     top: 0;

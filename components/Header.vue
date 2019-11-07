@@ -4,9 +4,12 @@
       <LinkBtn to="/" text="三聯單"></LinkBtn>
       <LinkBtn to="/duplicate" text="二聯單"></LinkBtn>
       <LinkBtn to="/codeSearch" text="統一編號查詢"></LinkBtn>
-      <!-- <LinkBtn to="/history" text="歷程記錄"></LinkBtn> -->
+      <LinkBtn v-if="$store.state.isLogin" to="/history" text="歷程記錄"></LinkBtn>
     </div>
-    <el-button type="danger" @click="showLogin = true">登入/註冊</el-button>
+
+    <el-button v-if="$store.state.isLogin" type="danger" @click="logout">登出</el-button>
+    <el-button v-else type="danger" @click="showLogin = true">登入/註冊</el-button>
+
     <el-dialog title="登入 / 註冊" :visible.sync="showLogin" center width="400px">
       <el-form :model="loginForm" status-icon :rules="rules" ref="loginForm" label-width="60px">
         <el-form-item label="賬號" prop="account">
@@ -33,7 +36,7 @@
       <div class="google-login btn">
         <i class="iconfont icon-google"></i> 使用google帳號登入
       </div>
-      <div class="facebook-login btn">
+      <div class="facebook-login btn" @click="fbLogin">
         <i class="iconfont icon-facebook"></i> 使用facebook帳號登入
       </div>
     </el-dialog>
@@ -61,7 +64,38 @@ export default {
       }
     }
   },
-  methods: {}
+  methods: {
+    fbLogin() {
+      FB.login(resp => {
+        if (resp.status === 'connected') {
+          this.$store.commit('LOGIN_SUCCESS', {
+            ...resp,
+            userID: resp.authResponse.userID,
+            type: 'fb'
+          })
+        }
+        this.showLogin = false
+      })
+    },
+    logout() {
+      if (this.$store.state.userinfo.type === 'fb') {
+        FB.logout(resp => {
+          this.$store.commit('LOGOUT_SUCCESS')
+        })
+      }
+    }
+  },
+  mounted() {
+    FB.getLoginStatus(resp => {
+      if (resp.status === 'connected') {
+        this.$store.commit('LOGIN_SUCCESS', {
+          ...resp,
+          userID: resp.authResponse.userID,
+          type: 'fb'
+        })
+      }
+    })
+  }
 }
 </script>
 
