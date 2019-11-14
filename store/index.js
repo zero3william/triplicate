@@ -1,6 +1,6 @@
 export const state = () => {
   return {
-    taxRate: 0.1,
+    taxRate: 0.05,
     isLogin: false
   }
 }

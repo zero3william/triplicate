@@ -12,9 +12,16 @@ export default {
         hid: 'description',
         name: 'description',
         content: process.env.npm_package_description || ''
+      },
+      {
+        name: 'google-site-verification',
+        content: 'xfCcI9xgypY1_82qrNlJNC3Rsqc_qO8mzM0Evzy5-TA'
       }
     ],
-    script: [{ src: '/fb-sdk.js' }],
+    script: [
+      { src: '/fb-sdk.js' },
+      { src: 'https://apis.google.com/js/platform.js?onload=init' }
+    ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
       {

@@ -1,9 +1,16 @@
 <template>
-  <div class="title">Duplicate</div>
+  <Duplicate />
 </template>
 
 <script>
-export default {}
+import Duplicate from '../components/Duplicate'
+
+export default {
+  name: 'index',
+  components: {
+    Duplicate
+  }
+}
 </script>
 
 <style>

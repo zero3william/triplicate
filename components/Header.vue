@@ -7,7 +7,18 @@
       <LinkBtn v-if="$store.state.isLogin" to="/history" text="歷程記錄"></LinkBtn>
     </div>
 
-    <el-button v-if="$store.state.isLogin" type="danger" @click="logout">登出</el-button>
+    <el-dropdown v-if="$store.state.isLogin">
+      <span class="el-dropdown-link">
+        {{$store.state.userinfo.name}}
+        <el-button type="info" icon="el-icon-user" circle size="small"></el-button>
+      </span>
+      <el-dropdown-menu slot="dropdown">
+        <el-dropdown-item>
+          <el-button type="danger" @click="logout">登出</el-button>
+        </el-dropdown-item>
+      </el-dropdown-menu>
+    </el-dropdown>
+
     <el-button v-else type="danger" @click="showLogin = true">登入/註冊</el-button>
 
     <el-dialog title="登入 / 註冊" :visible.sync="showLogin" center width="400px">
@@ -33,7 +44,7 @@
 
       <br />
 
-      <div class="google-login btn">
+      <div class="google-login btn" @click="googleLogin">
         <i class="iconfont icon-google"></i> 使用google帳號登入
       </div>
       <div class="facebook-login btn" @click="fbLogin">
@@ -65,16 +76,34 @@ export default {
     }
   },
   methods: {
+    getUserFbInfo(resp) {
+      FB.api('/me', 'GET', { fields: 'name,email' }, userInfo => {
+        this.$store.commit('LOGIN_SUCCESS', {
+          ...resp,
+          userID: resp.authResponse.userID,
+          type: 'fb',
+          name: userInfo.name
+        })
+      })
+    },
     fbLogin() {
       FB.login(resp => {
         if (resp.status === 'connected') {
-          this.$store.commit('LOGIN_SUCCESS', {
-            ...resp,
-            userID: resp.authResponse.userID,
-            type: 'fb'
-          })
+          this.getUserFbInfo(resp)
         }
         this.showLogin = false
+      })
+    },
+    googleLogin() {
+      gapi.load('auth2', function() {
+        gapi.auth2
+          .init({
+            client_id:
+              '819775590311-3c3tb8j4ccap7h9a8h7b52io51p2c8ao.apps.googleusercontent.com'
+          })
+          .then(auth2 => {
+            console.log('success', auth2)
+          })
       })
     },
     logout() {
@@ -88,11 +117,7 @@ export default {
   mounted() {
     FB.getLoginStatus(resp => {
       if (resp.status === 'connected') {
-        this.$store.commit('LOGIN_SUCCESS', {
-          ...resp,
-          userID: resp.authResponse.userID,
-          type: 'fb'
-        })
+        this.getUserFbInfo(resp)
       }
     })
   }
@@ -101,6 +126,7 @@ export default {
 
 <style lang="scss" scoped>
 .btn {
+  cursor: pointer;
   margin: 10px auto;
   width: 300px;
   color: #fff;

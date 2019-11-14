@@ -10,7 +10,7 @@
 
     <div class="title text-center">
       <span>統一發票</span>
-      <span>(三聯式)</span>
+      <span>(二聯式)</span>
     </div>
     <div class="subtitle text-center">
       <span>{{titleYear}}</span>
@@ -28,22 +28,7 @@
           </div>
         </td>
         <td>
-          <input type="text" v-model="buyer" @keyup="searchCode" style="width:210px;" />
-        </td>
-        <td></td>
-      </tr>
-      <tr>
-        <td>
-          <div>
-            <span>統</span>
-            <span>一</span>
-            <span>編</span>
-            <span>號</span>
-          </div>
-        </td>
-        <td>
-          <span style="letter-spacing:6px;padding-left:3px;">{{taxCode}}</span>
-          <el-button icon="el-icon-search" type="info" plain size="mini" @click="toCodeSearch"></el-button>
+          <input type="text" v-model="buyer" style="width:210px;" />
         </td>
         <td>
           中華民國
@@ -53,13 +38,13 @@
         </td>
       </tr>
       <tr>
-        <td>
-          <div>
-            <span>地</span>
-            <span>址</span>
-          </div>
-        </td>
-        <td>{{address}}</td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td></td>
         <td></td>
       </tr>
     </table>
@@ -285,40 +270,8 @@
 
 <script>
 export default {
-  name: 'Triplicate',
+  name: 'Duplicate',
   methods: {
-    selectBuyer(data) {
-      this.taxCode = data.Business_Accounting_NO
-      this.buyer = data.Company_Name
-      this.address = data.Company_Location
-      this.dialogVisible = false
-    },
-    toCodeSearch() {
-      this.$router.push({
-        name: 'codeSearch'
-      })
-    },
-    searchCode(e) {
-      if (
-        e.key === 'Enter' &&
-        !(this.buyer === '' || this.buyer === undefined)
-      ) {
-        e.target.blur()
-        this.loading = true
-        this.$api.getCompanyCodeList(this.buyer).then(resp => {
-          this.loading = false
-          if (resp.data.length > 0) {
-            this.list = resp.data
-            this.dialogVisible = true
-          } else {
-            this.$message({
-              message: '查無資料',
-              type: 'warning'
-            })
-          }
-        })
-      }
-    },
     changeItem(event, num, key) {
       if (event.key === 'Tab') {
         return
@@ -590,7 +543,7 @@ export default {
   &:after {
     content: '';
     background-image: url('/tw-bg.png');
-    height: 480px;
+    height: 430px;
     opacity: 0.1;
     position: absolute;
     top: 0;
