@@ -38,7 +38,7 @@
       </el-form>
 
       <el-row type="flex" justify="center">
-        <el-button class="w100 mr-4" type="primary" @click="showLogin = false;">登入</el-button>
+        <el-button class="w100 mr-4" type="primary" @click="normalLogin">登入</el-button>
         <el-button class="w100" type="danger" @click="showLogin = false;">註冊</el-button>
       </el-row>
 
@@ -66,8 +66,8 @@ export default {
     return {
       showLogin: false,
       loginForm: {
-        account: '',
-        password: ''
+        account: 'zero3william@gmail.com',
+        password: '123456'
       },
       rules: {
         account: [{ required: true, message: '請輸入帳號', trigger: 'blur' }],
@@ -76,22 +76,26 @@ export default {
     }
   },
   methods: {
-    getUserFbInfo(resp) {
-      FB.api('/me', 'GET', { fields: 'name,email' }, userInfo => {
-        this.$store.commit('LOGIN_SUCCESS', {
-          ...resp,
-          userID: resp.authResponse.userID,
-          type: 'fb',
-          name: userInfo.name
+    normalLogin() {
+      this.$api
+        .login({
+          email: this.loginForm.account,
+          password: this.loginForm.password
         })
-      })
+        .then(resp => {
+          if (resp.data && resp.data.id) {
+            this.$store.commit('LOGIN_SUCCESS', {
+              ...resp.data
+            })
+            this.showLogin = false
+          }
+        })
     },
     fbLogin() {
       FB.login(resp => {
         if (resp.status === 'connected') {
           this.getUserFbInfo(resp)
         }
-        this.showLogin = false
       })
     },
     googleLogin() {
@@ -107,19 +111,27 @@ export default {
       })
     },
     logout() {
-      if (this.$store.state.userinfo.type === 'fb') {
-        FB.logout(resp => {
-          this.$store.commit('LOGOUT_SUCCESS')
+      this.$store.commit('LOGOUT_SUCCESS')
+    },
+    getUserFbInfo(resp) {
+      FB.api('/me', 'GET', { fields: 'name,email' }, userInfo => {
+        this.$store.commit('LOGIN_SUCCESS', {
+          ...resp.authResponse,
+          accountType: 'fb',
+          id: userInfo.id,
+          name: userInfo.name
         })
-      }
+        this.showLogin = false
+      })
     }
   },
   mounted() {
-    FB.getLoginStatus(resp => {
-      if (resp.status === 'connected') {
-        this.getUserFbInfo(resp)
-      }
-    })
+    if (window.sessionStorage['session']) {
+      this.$store.commit(
+        'LOGIN_SUCCESS',
+        JSON.parse(window.sessionStorage['session'])
+      )
+    }
   }
 }
 </script>

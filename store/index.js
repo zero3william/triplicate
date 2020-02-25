@@ -15,12 +15,5 @@ export const mutations = {
     state.userinfo = null
     state.isLogin = false
     window.sessionStorage.removeItem('session')
-  },
-  MODIFY_SUCCESS(state, payload) {
-    state.userinfo = {
-      ...state.userinfo,
-      ...payload
-    }
-    window.sessionStorage['session'] = JSON.stringify(state.userinfo)
   }
 }

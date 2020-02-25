@@ -5,10 +5,9 @@ import { Message } from 'element-ui'
 export default function(ctx, inject) {
   const cors = 'https://cors-anywhere.herokuapp.com/'
   const url_byName =
-    'http://data.gcis.nat.gov.tw/od/data/api/6BBA2268-1367-4B42-9CCA-BC17499EBE8C'
+    'https://data.gcis.nat.gov.tw/od/data/api/6BBA2268-1367-4B42-9CCA-BC17499EBE8C'
   const url_byCode =
-    'http://data.gcis.nat.gov.tw/od/data/api/5F64D864-61CB-4D0D-8AD9-492047CC1EA6'
-
+    'https://data.gcis.nat.gov.tw/od/data/api/5F64D864-61CB-4D0D-8AD9-492047CC1EA6'
   const api = {
     getCompanyCodeList: searchStr => {
       let reg = /^[0-9]*$/
@@ -23,6 +22,28 @@ export default function(ctx, inject) {
           method: 'GET'
         })
       }
+    },
+    login: ({ email, password }) => {
+      return Axios.post(
+        cors + 'http://pei.usa543.com:6688/api/loginByEmail',
+        { email, password },
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      )
+    },
+    fetchInvoice: ({ id }) => {
+      return Axios.post(
+        cors + 'http://pei.usa543.com:6688/api/retrieveInvoice',
+        { id },
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      )
     }
   }
 
