@@ -26,7 +26,6 @@
         <el-form-item label="賬號" prop="account">
           <el-input v-model="loginForm.account" placeholder="請輸入帳號/郵箱"></el-input>
         </el-form-item>
-
         <el-form-item label="密碼" prop="password">
           <el-input
             type="password"
@@ -38,8 +37,8 @@
       </el-form>
 
       <el-row type="flex" justify="center">
-        <el-button class="w100 mr-4" type="primary" @click="normalLogin">登入</el-button>
-        <el-button class="w100" type="danger" @click="showLogin = false;">註冊</el-button>
+        <el-button class="w100 mr-4" type="primary" @click="normalLogin('loginForm')">登入</el-button>
+        <el-button class="w100" type="danger" @click="showSignup = true;">註冊</el-button>
       </el-row>
 
       <br />
@@ -49,6 +48,38 @@
       </div>
       <div class="facebook-login btn" @click="fbLogin">
         <i class="iconfont icon-facebook"></i> 使用facebook帳號登入
+      </div>
+    </el-dialog>
+    <el-dialog width="500px" title="新會員註冊" :visible.sync="showSignup" :close-on-click-modal="false">
+      <div
+        style="width:410px;margin:0 auto;"
+        v-loading.fullscreen.lock="signuping"
+        element-loading-text="註冊中"
+      >
+        <el-form
+          ref="signupForm"
+          :model="signupForm"
+          label-width="100px"
+          label-position="left"
+          status-icon
+          :rules="signupRules"
+        >
+          <el-form-item label="帳號(信箱)" prop="email">
+            <el-input v-model="signupForm.email"></el-input>
+          </el-form-item>
+          <el-form-item label="密碼" prop="password">
+            <el-input v-model="signupForm.password" type="password"></el-input>
+          </el-form-item>
+          <el-form-item label="確認密碼" prop="check_password">
+            <el-input v-model="signupForm.check_password" type="password"></el-input>
+          </el-form-item>
+          <el-form-item label="暱稱" prop="name">
+            <el-input v-model="signupForm.name"></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="onSignup('signupForm')">送出</el-button>
+          </el-form-item>
+        </el-form>
       </div>
     </el-dialog>
   </el-row>
@@ -65,31 +96,112 @@ export default {
   data() {
     return {
       showLogin: false,
+      showSignup: false,
+      signuping: false,
       loginForm: {
-        account: 'zero3william@gmail.com',
-        password: '123456'
+        account: 'test1@gmail.com',
+        password: 'taipei888'
       },
       rules: {
         account: [{ required: true, message: '請輸入帳號', trigger: 'blur' }],
         password: [{ required: true, message: '請輸入密碼', trigger: 'blur' }]
+      },
+      signupForm: {
+        name: '',
+        email: '',
+        password: '',
+        check_password: ''
+      },
+      signupRules: {
+        name: [{ required: true, message: '請輸入暱稱', trigger: 'blur' }],
+        email: [{ required: true, message: '請輸入帳號', trigger: 'blur' }],
+        password: [
+          {
+            required: true,
+            trigger: 'blur',
+            validator: (rule, value, callback) => {
+              if (value === '') {
+                callback(new Error('請輸入密碼'))
+              } else if (!/^[a-zA-Z0-9]{8,12}$/.test(value)) {
+                callback(new Error('請輸入8-12個字元，英數字混合'))
+              } else {
+                callback()
+              }
+            }
+          }
+        ],
+        check_password: [
+          {
+            required: true,
+            trigger: 'blur',
+            validator: (rule, value, callback) => {
+              if (value === '') {
+                callback(new Error('請再次輸入密碼'))
+              } else if (value !== this.signupForm.password) {
+                callback(new Error('兩次輸入密碼不一致'))
+              } else {
+                callback()
+              }
+            }
+          }
+        ]
       }
     }
   },
   methods: {
-    normalLogin() {
-      this.$api
-        .login({
-          email: this.loginForm.account,
-          password: this.loginForm.password
-        })
-        .then(resp => {
-          if (resp.data && resp.data.id) {
-            this.$store.commit('LOGIN_SUCCESS', {
-              ...resp.data
+    onSignup(formName) {
+      this.$refs[formName].validate(valid => {
+        if (valid) {
+          this.signuping = true
+          this.$api
+            .signup(this.signupForm)
+            .then(resp => {
+              this.$message({
+                message: '註冊成功',
+                type: 'success'
+              })
+              this.signuping = false
+              this.showSignup = false
             })
-            this.showLogin = false
+            .catch(err => {
+              this.$message({
+                message: '註冊失敗',
+                type: 'error'
+              })
+              this.signuping = false
+              this.showSignup = false
+            })
+          this.signupForm = {
+            name: '',
+            email: '',
+            password: '',
+            check_password: ''
           }
-        })
+        } else {
+          return false
+        }
+      })
+    },
+    normalLogin(formName) {
+      this.$refs[formName].validate(valid => {
+        if (valid) {
+          this.$api
+            .login({
+              email: this.loginForm.account,
+              password: this.loginForm.password
+            })
+            .then(resp => {
+              if (resp.data && resp.data.id) {
+                this.$store.commit('LOGIN_SUCCESS', {
+                  ...resp.data
+                })
+                this.showLogin = false
+              }
+            })
+        } else {
+          return false
+        }
+      })
     },
     fbLogin() {
       FB.login(resp => {

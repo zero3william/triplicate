@@ -34,7 +34,7 @@ export default {
 #main-container {
   width: 100%;
   min-width: 800px;
-  max-width: 900px;
+  max-width: 980px;
   min-height: 768px;
   max-height: 768px;
 }

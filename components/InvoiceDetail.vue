@@ -1,16 +1,8 @@
 <template>
-  <div
-    class="invoice-contaner"
-    v-loading.fullscreen="loading"
-    element-loading-text="查詢中"
-    element-loading-spinner="el-icon-loading"
-    element-loading-background="rgba(0, 0, 0, 0.8)"
-  >
-    <el-button type="info" plain @click="reset" style="float:right;">清空重填</el-button>
-
+  <div class="invoice-contaner">
     <div class="title text-center">
       <span>統一發票</span>
-      <span>(二聯式)</span>
+      <span>(三聯式)</span>
     </div>
     <div class="subtitle text-center">
       <span>{{titleYear}}</span>
@@ -28,7 +20,22 @@
           </div>
         </td>
         <td>
-          <input type="text" v-model="buyer" style="width:210px;" />
+          <input type="text" v-model="buyer" @keyup="searchCode" style="width:210px;" />
+        </td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>
+          <div>
+            <span>統</span>
+            <span>一</span>
+            <span>編</span>
+            <span>號</span>
+          </div>
+        </td>
+        <td>
+          <span style="letter-spacing:6px;padding-left:3px;">{{taxCode}}</span>
+          <!-- <el-button icon="el-icon-search" type="info" plain size="mini" @click="toCodeSearch"></el-button> -->
         </td>
         <td>
           中華民國
@@ -38,13 +45,13 @@
         </td>
       </tr>
       <tr>
-        <td></td>
-        <td></td>
-        <td></td>
-      </tr>
-      <tr>
-        <td></td>
-        <td></td>
+        <td>
+          <div>
+            <span>地</span>
+            <span>址</span>
+          </div>
+        </td>
+        <td>{{address}}</td>
         <td></td>
       </tr>
     </table>
@@ -150,7 +157,7 @@
             <span class="ls ls-4">銷售額合計</span>
           </td>
           <td>
-            <input v-model="writePrice" @keyup="totalChange()" />
+            <input v-model="writePrice" @keyup="totalChange()" tabindex="-1" />
           </td>
         </tr>
         <tr>
@@ -179,6 +186,7 @@
                       id="taxType1"
                       v-model="taxType1"
                       @change="taxChange($event,'taxType1')"
+                      v-if="taxType1"
                     ></el-checkbox>
                   </td>
                   <td class="option-field no-border-bottom">
@@ -186,6 +194,7 @@
                       id="taxType2"
                       v-model="taxType2"
                       @change="taxChange($event,'taxType2')"
+                      v-if="taxType2"
                     ></el-checkbox>
                   </td>
                   <td class="option-field no-border-bottom no-border-right">
@@ -193,6 +202,7 @@
                       id="taxType3"
                       v-model="taxType3"
                       @change="taxChange($event,'taxType3')"
+                      v-if="taxType3"
                     ></el-checkbox>
                   </td>
                 </tr>
@@ -208,7 +218,7 @@
             <span class="ls ls-17">總計</span>
           </td>
           <td>
-            <input v-model="writeTotal" @keyup="totalChange" />
+            <input v-model="writeTotal" @keyup="totalChange" tabindex="-1" />
           </td>
         </tr>
         <tr>
@@ -241,44 +251,12 @@
         </tr>
       </tbody>
     </table>
-
-    <el-row type="flex" justify="center">
-      <el-button
-        class="save-btn"
-        v-if="$store.state.isLogin"
-        type="success"
-        round
-        @click="saveInvoice"
-      >儲存此張發票</el-button>
-    </el-row>
-
-    <el-dialog title="查詢結果" :visible.sync="dialogVisible" width="700px">
-      <el-table :data="list" :height="tableHeight" stripe>
-        <el-table-column type="index" align="center" width="80"></el-table-column>
-        <el-table-column
-          v-for="col in columns"
-          :prop="col.id"
-          :key="col.id"
-          :label="col.label"
-          :width="col.width"
-          align="center"
-        ></el-table-column>
-        <el-table-column fixed="right" width="160" align="center">
-          <template slot-scope="scope">
-            <el-button @click="selectBuyer(scope.row)" type="text" size="small">複製</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-      </span>
-    </el-dialog>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'Duplicate',
+  name: 'InvoiceDetail',
   methods: {
     saveInvoice() {
       const items = [this.item1, this.item2, this.item3, this.item4, this.item5]
@@ -300,7 +278,7 @@ export default {
         buyerTaxId: this.taxCode,
         issueDay: d.toISOString(),
         comment: this.comment,
-        invoiceType: 2,
+        invoiceType: 3,
         taxType: Math.round(this.$store.state.taxRate * 100),
         subTotal:
           typeof this.writePrice === Number
@@ -328,6 +306,38 @@ export default {
             message: '儲存失敗'
           })
         })
+    },
+    selectBuyer(data) {
+      this.taxCode = data.Business_Accounting_NO
+      this.buyer = data.Company_Name
+      this.address = data.Company_Location
+      this.dialogVisible = false
+    },
+    toCodeSearch() {
+      this.$router.push({
+        name: 'codeSearch'
+      })
+    },
+    searchCode(e) {
+      if (
+        e.key === 'Enter' &&
+        !(this.buyer === '' || this.buyer === undefined)
+      ) {
+        e.target.blur()
+        this.loading = true
+        this.$api.getCompanyCodeList(this.buyer).then(resp => {
+          this.loading = false
+          if (resp.data.length > 0) {
+            this.list = resp.data
+            this.dialogVisible = true
+          } else {
+            this.$message({
+              message: '查無資料',
+              type: 'warning'
+            })
+          }
+        })
+      }
     },
     changeItem(event, num, key) {
       if (event.key === 'Tab') {
@@ -540,6 +550,12 @@ export default {
       }
     }
   },
+  props: {
+    detail: {
+      type: Object,
+      required: true
+    }
+  },
   data() {
     return {
       comment: '',
@@ -564,15 +580,64 @@ export default {
       columns: [
         { label: '統一編號', width: 160, id: 'Business_Accounting_NO' },
         { label: '公司名稱', id: 'Company_Name' }
-      ],
-      tableHeight: 560
+      ]
     }
   },
   mounted() {
-    let d = new Date()
-    this.date.year = d.getFullYear() - 1911
-    this.date.month = d.getMonth() + 1
-    this.date.day = d.getDate()
+    this.comment = this.detail.comment
+    ;(this.buyer = this.detail.buyerName),
+      (this.taxCode = this.detail.buyerTaxId),
+      // this.address= this.detail.,
+      (this.taxType1 = this.detail.taxType > 0 ? true : false),
+      (this.taxType2 = this.detail.taxType > 0 ? false : false),
+      (this.taxType3 = this.detail.taxType > 0 ? false : true),
+      (this.writePrice = this.detail.subTotal),
+      (this.writeTotal = this.detail.totalAmount),
+      (this.item1 = this.detail.invoiceDetail[0]
+        ? {
+            name: this.detail.invoiceDetail[0].itemName,
+            num: this.detail.invoiceDetail[0].quantity,
+            price: this.detail.invoiceDetail[0].price,
+            total: this.detail.invoiceDetail[0].amount
+          }
+        : { name: '', num: '', price: '', total: '' })
+    this.item2 = this.detail.invoiceDetail[1]
+      ? {
+          name: this.detail.invoiceDetail[1].itemName,
+          num: this.detail.invoiceDetail[1].quantity,
+          price: this.detail.invoiceDetail[1].price,
+          total: this.detail.invoiceDetail[1].amount
+        }
+      : { name: '', num: '', price: '', total: '' }
+    this.item3 = this.detail.invoiceDetail[2]
+      ? {
+          name: this.detail.invoiceDetail[2].itemName,
+          num: this.detail.invoiceDetail[2].quantity,
+          price: this.detail.invoiceDetail[2].price,
+          total: this.detail.invoiceDetail[2].amount
+        }
+      : { name: '', num: '', price: '', total: '' }
+    this.item4 = this.detail.invoiceDetail[3]
+      ? {
+          name: this.detail.invoiceDetail[3].itemName,
+          num: this.detail.invoiceDetail[3].quantity,
+          price: this.detail.invoiceDetail[3].price,
+          total: this.detail.invoiceDetail[3].amount
+        }
+      : { name: '', num: '', price: '', total: '' }
+    this.item5 = this.detail.invoiceDetail[4]
+      ? {
+          name: this.detail.invoiceDetail[4].itemName,
+          num: this.detail.invoiceDetail[4].quantity,
+          price: this.detail.invoiceDetail[4].price,
+          total: this.detail.invoiceDetail[4].amount
+        }
+      : { name: '', num: '', price: '', total: '' }
+
+    const str = this.detail.issueDay.split('-')
+    this.date.year = str[0] - 1911
+    this.date.month = parseInt(str[1])
+    this.date.day = parseInt(str[2])
   }
 }
 </script>
@@ -597,7 +662,7 @@ export default {
   &:after {
     content: '';
     background-image: url('/tw-bg.png');
-    height: 430px;
+    height: 480px;
     opacity: 0.1;
     position: absolute;
     top: 0;
@@ -657,16 +722,17 @@ export default {
   }
   input {
     position: relative;
-    z-index: 1;
+    // z-index: 1;
     height: 24px;
     text-align: center;
+    font-size: 1.4rem;
   }
   textarea {
     height: 45px;
     width: 100%;
     position: relative;
     resize: none;
-    z-index: 1;
+    // z-index: 1;
     top: 3px;
   }
   button {

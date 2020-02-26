@@ -34,6 +34,39 @@ export default function(ctx, inject) {
         }
       )
     },
+    signup: ({ name, email, password, accountType = 'Email' }) => {
+      return Axios.post(
+        cors + 'http://pei.usa543.com:6688/api/registerUser',
+        { name, email, password, accountType },
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      )
+    },
+    fbSignup: ({ name, email, accountType = 'fb' }) => {
+      return Axios.post(
+        cors + 'http://pei.usa543.com:6688/api/registerUser',
+        { name, email, accountType },
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      )
+    },
+    addInvoice: params => {
+      return Axios.post(
+        cors + 'http://pei.usa543.com:6688/api/createInvoice',
+        params,
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      )
+    },
     fetchInvoice: ({ id }) => {
       return Axios.post(
         cors + 'http://pei.usa543.com:6688/api/retrieveInvoice',

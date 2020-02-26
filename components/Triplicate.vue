@@ -96,7 +96,9 @@
           <td>
             <input v-model="item1.total" @keyup="changeItem($event,1,'total')" />
           </td>
-          <td rowspan="2"></td>
+          <td rowspan="2">
+            <textarea v-model="comment"></textarea>
+          </td>
         </tr>
         <tr class="thin-border">
           <td>
@@ -163,7 +165,7 @@
             <span class="ls ls-4">銷售額合計</span>
           </td>
           <td>
-            <input v-model="writePrice" @keyup="totalChange()" />
+            <input v-model="writePrice" @keyup="totalChange()" tabindex="-1" />
           </td>
         </tr>
         <tr>
@@ -221,7 +223,7 @@
             <span class="ls ls-17">總計</span>
           </td>
           <td>
-            <input v-model="writeTotal" @keyup="totalChange" />
+            <input v-model="writeTotal" @keyup="totalChange" tabindex="-1" />
           </td>
         </tr>
         <tr>
@@ -256,7 +258,13 @@
     </table>
 
     <el-row type="flex" justify="center">
-      <el-button class="save-btn" v-if="$store.state.isLogin" type="success" round>儲存此張發票</el-button>
+      <el-button
+        class="save-btn"
+        v-if="$store.state.isLogin"
+        type="success"
+        round
+        @click="saveInvoice"
+      >儲存此張發票</el-button>
     </el-row>
 
     <el-dialog title="查詢結果" :visible.sync="dialogVisible" width="700px">
@@ -287,6 +295,55 @@
 export default {
   name: 'Triplicate',
   methods: {
+    saveInvoice() {
+      const items = [this.item1, this.item2, this.item3, this.item4, this.item5]
+        .filter(item => item.total !== '')
+        .map(item => {
+          return {
+            itemName: item.name,
+            quantity: item.num,
+            price: item.price,
+            amount: item.total
+          }
+        })
+      let d = new Date(
+        Date.UTC(this.date.year + 1911, this.date.month - 1, this.date.day)
+      )
+
+      let params = {
+        buyerName: this.buyer,
+        buyerTaxId: this.taxCode,
+        issueDay: d.toISOString(),
+        comment: this.comment,
+        invoiceType: 3,
+        taxType: Math.round(this.$store.state.taxRate * 100),
+        subTotal:
+          typeof this.writePrice === Number
+            ? this.writePrice
+            : parseInt(this.writePrice),
+        taxAmount: this.writeTax,
+        totalAmount:
+          typeof this.writeTotal === Number
+            ? this.writeTotal
+            : parseInt(this.writeTotal),
+        userId: this.$store.state.userinfo.id,
+        invoiceDetail: items
+      }
+      this.$api
+        .addInvoice(params)
+        .then(resp => {
+          this.$message.success({
+            dangerouslyUseHTMLString: true,
+            message: '儲存成功!<br>可至歷程紀錄查看'
+          })
+          this.reset()
+        })
+        .catch(err => {
+          this.$message.error({
+            message: '儲存失敗'
+          })
+        })
+    },
     selectBuyer(data) {
       this.taxCode = data.Business_Accounting_NO
       this.buyer = data.Company_Name
@@ -532,9 +589,10 @@ export default {
   },
   data() {
     return {
-      buyer: '',
-      taxCode: '',
-      address: '',
+      comment: '',
+      buyer: '天天旅行社股份有限公司',
+      taxCode: '04616794',
+      address: '臺北市中正區重慶南路1段10號11樓',
       taxType1: true,
       taxType2: false,
       taxType3: false,
@@ -563,9 +621,9 @@ export default {
     this.date.month = d.getMonth() + 1
     this.date.day = d.getDate()
 
-    this.buyer = this.$route.params.buyer
-    this.taxCode = this.$route.params.taxCode
-    this.address = this.$route.params.address
+    // this.buyer = this.$route.params.buyer
+    // this.taxCode = this.$route.params.taxCode
+    // this.address = this.$route.params.address
   }
 }
 </script>
@@ -584,7 +642,7 @@ export default {
   font-weight: bold;
   position: relative;
   padding: 1rem 2rem;
-  max-width: 720px;
+  max-width: 800px;
   min-width: 680px;
   margin: 0 auto;
   &:after {
@@ -653,6 +711,14 @@ export default {
     z-index: 1;
     height: 24px;
     text-align: center;
+  }
+  textarea {
+    height: 45px;
+    width: 100%;
+    position: relative;
+    resize: none;
+    z-index: 1;
+    top: 3px;
   }
   button {
     position: relative;
