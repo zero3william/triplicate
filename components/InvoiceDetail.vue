@@ -661,7 +661,7 @@ export default {
   margin: 0 auto;
   &:after {
     content: '';
-    background-image: url('/tw-bg.png');
+    background-image: url('/invoice/invoiceBg.png');
     height: 480px;
     opacity: 0.1;
     position: absolute;

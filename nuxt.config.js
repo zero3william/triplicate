@@ -1,8 +1,10 @@
+const baseUrl = process.env.NODE_ENV === 'production' ? '/invoice/' : '/'
+
 export default {
   mode: 'spa',
-  /*
-   ** Headers of the page
-   */
+  router: {
+    base: baseUrl
+  },
   head: {
     title: process.env.npm_package_name || '',
     meta: [
@@ -19,7 +21,7 @@ export default {
       }
     ],
     script: [
-      { src: '/fb-sdk.js' },
+      { src: baseUrl + 'fb-sdk.js' },
       { src: 'https://apis.google.com/js/platform.js?onload=init' }
     ],
     link: [

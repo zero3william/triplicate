@@ -43,9 +43,9 @@
 
       <br />
 
-      <div class="google-login btn" @click="googleLogin">
+      <!-- <div class="google-login btn" @click="googleLogin">
         <i class="iconfont icon-google"></i> 使用google帳號登入
-      </div>
+      </div>-->
       <div class="facebook-login btn" @click="fbLogin">
         <i class="iconfont icon-facebook"></i> 使用facebook帳號登入
       </div>

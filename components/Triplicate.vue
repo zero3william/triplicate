@@ -2,7 +2,7 @@
   <div
     class="invoice-contaner"
     v-loading.fullscreen="loading"
-    element-loading-text="查詢中"
+    element-loading-text="處理中"
     element-loading-spinner="el-icon-loading"
     element-loading-background="rgba(0, 0, 0, 0.8)"
   >
@@ -296,6 +296,7 @@ export default {
   name: 'Triplicate',
   methods: {
     saveInvoice() {
+      this.loading = true
       const items = [this.item1, this.item2, this.item3, this.item4, this.item5]
         .filter(item => item.total !== '')
         .map(item => {
@@ -316,7 +317,10 @@ export default {
         issueDay: d.toISOString(),
         comment: this.comment,
         invoiceType: 3,
-        taxType: Math.round(this.$store.state.taxRate * 100),
+        taxType:
+          this.taxType1 === true
+            ? Math.round(this.$store.state.taxRate * 100)
+            : 0,
         subTotal:
           typeof this.writePrice === Number
             ? this.writePrice
@@ -337,11 +341,13 @@ export default {
             message: '儲存成功!<br>可至歷程紀錄查看'
           })
           this.reset()
+          this.loading = false
         })
         .catch(err => {
           this.$message.error({
             message: '儲存失敗'
           })
+          this.loading = false
         })
     },
     selectBuyer(data) {
@@ -530,6 +536,7 @@ export default {
       this.buyer = ''
       this.taxCode = ''
       this.address = ''
+      this.comment = ''
       this.taxType1 = true
       this.taxType2 = false
       this.taxType3 = false
@@ -590,9 +597,9 @@ export default {
   data() {
     return {
       comment: '',
-      buyer: '天天旅行社股份有限公司',
-      taxCode: '04616794',
-      address: '臺北市中正區重慶南路1段10號11樓',
+      buyer: '',
+      taxCode: '',
+      address: '',
       taxType1: true,
       taxType2: false,
       taxType3: false,
@@ -621,9 +628,9 @@ export default {
     this.date.month = d.getMonth() + 1
     this.date.day = d.getDate()
 
-    // this.buyer = this.$route.params.buyer
-    // this.taxCode = this.$route.params.taxCode
-    // this.address = this.$route.params.address
+    this.buyer = this.$route.params.buyer
+    this.taxCode = this.$route.params.taxCode
+    this.address = this.$route.params.address
   }
 }
 </script>
@@ -647,7 +654,7 @@ export default {
   margin: 0 auto;
   &:after {
     content: '';
-    background-image: url('/tw-bg.png');
+    background-image: url('/invoice/invoiceBg.png');
     height: 480px;
     opacity: 0.1;
     position: absolute;
